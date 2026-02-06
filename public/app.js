@@ -1,5 +1,7 @@
-// API configuration
-const API_URL = 'http://localhost:3000/api';
+// API configuration - works both locally and in production
+const API_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost:3000/api'
+    : '/api';
 
 // State management
 let currentUser = null;
@@ -143,7 +145,7 @@ async function loadUserProgress() {
     try {
         const response = await fetch(`${API_URL}/progress/${currentUser.userId}`);
         const data = await response.json();
-        
+
         levelScores = {};
         Object.keys(data.progress).forEach(level => {
             levelScores[level] = data.progress[level].score;
@@ -162,7 +164,7 @@ function showLevelScreen() {
     document.getElementById('levelScreen').classList.remove('hidden');
     document.getElementById('quizScreen').classList.add('hidden');
     document.getElementById('resultsContainer').classList.add('hidden');
-    
+
     document.getElementById('userNameDisplay').textContent = currentUser.username;
     renderLevels();
     updateStats();
@@ -171,15 +173,15 @@ function showLevelScreen() {
 function renderLevels() {
     const levelsGrid = document.getElementById('levelsGrid');
     levelsGrid.innerHTML = '';
-    
+
     for (let i = 1; i <= 4; i++) {
         const level = levels[i];
         const isCompleted = levelScores[i] !== undefined;
-        
+
         const card = document.createElement('div');
         card.className = 'level-card' + (isCompleted ? ' completed' : '');
         card.onclick = () => selectLevel(i);
-        
+
         card.innerHTML = `
             <div class="level-icon">${level.icon}</div>
             <div class="level-title">${level.title}</div>
@@ -190,7 +192,7 @@ function renderLevels() {
                 <div class="level-score">Score: ${levelScores[i]}%</div>
             ` : ''}
         `;
-        
+
         levelsGrid.appendChild(card);
     }
 }
@@ -198,7 +200,7 @@ function renderLevels() {
 function updateStats() {
     const completedLevels = Object.keys(levelScores).length;
     document.getElementById('levelsCompleted').textContent = `${completedLevels}/4`;
-    
+
     if (completedLevels > 0) {
         const totalScore = Object.values(levelScores).reduce((a, b) => a + b, 0);
         const avgScore = Math.round(totalScore / completedLevels);
@@ -212,25 +214,25 @@ function selectLevel(level) {
     currentLevel = level;
     currentQuestion = 0;
     score = 0;
-    
+
     document.getElementById('levelScreen').classList.add('hidden');
     document.getElementById('quizScreen').classList.remove('hidden');
-    
+
     document.getElementById('levelTitle').textContent = levels[level].title;
     document.getElementById('quizUserName').textContent = currentUser.username;
-    
+
     loadQuestion();
 }
 
 function loadQuestion() {
     const question = levels[currentLevel].questions[currentQuestion];
-    document.getElementById('questionNumber').textContent = 
+    document.getElementById('questionNumber').textContent =
         `Question ${currentQuestion + 1} of ${levels[currentLevel].questions.length}`;
     document.getElementById('questionText').textContent = question.question;
-    
+
     const optionsContainer = document.getElementById('optionsContainer');
     optionsContainer.innerHTML = '';
-    
+
     question.options.forEach((option, index) => {
         const optionDiv = document.createElement('div');
         optionDiv.className = 'option';
@@ -247,7 +249,7 @@ function loadQuestion() {
 async function selectOption(index) {
     const options = document.querySelectorAll('.option');
     const question = levels[currentLevel].questions[currentQuestion];
-    
+
     options.forEach(opt => {
         opt.classList.remove('selected', 'correct', 'incorrect');
         opt.classList.add('disabled');
@@ -288,7 +290,7 @@ async function selectOption(index) {
 
 function nextQuestion() {
     currentQuestion++;
-    
+
     if (currentQuestion < levels[currentLevel].questions.length) {
         loadQuestion();
     } else {
@@ -304,10 +306,10 @@ function updateProgress() {
 async function showResults() {
     document.getElementById('quizScreen').classList.add('hidden');
     document.getElementById('resultsContainer').classList.remove('hidden');
-    
+
     const totalQuestions = levels[currentLevel].questions.length;
     const percentage = Math.round((score / totalQuestions) * 100);
-    
+
     // Save score to database
     if (currentUser) {
         try {
@@ -320,17 +322,17 @@ async function showResults() {
                     score: percentage
                 })
             });
-            
+
             // Update local scores
             levelScores[currentLevel] = percentage;
         } catch (error) {
             console.error('Error saving progress:', error);
         }
     }
-    
+
     document.getElementById('resultUserName').textContent = currentUser.username;
     document.getElementById('scoreDisplay').textContent = percentage + '%';
-    
+
     let message = '';
     if (percentage >= 90) {
         message = 'Outstanding! You\'re mastering this level! 🌟';
@@ -341,7 +343,7 @@ async function showResults() {
     } else {
         message = 'Keep practicing! You\'ll improve! 💪';
     }
-    
+
     document.getElementById('scoreMessage').textContent = message;
     document.getElementById('correctCount').textContent = score;
     document.getElementById('incorrectCount').textContent = totalQuestions - score;
