@@ -451,6 +451,127 @@
             box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
         }
 
+        .quiz-header {
+            margin-bottom: 20px;
+        }
+
+        .leaderboard-content {
+            margin: 30px 0;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 40px;
+            font-size: 1.1em;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .leaderboard-table thead {
+            background: linear-gradient(135deg, #1a2742 0%, #2a4365 100%);
+            color: white;
+        }
+
+        .leaderboard-table th {
+            padding: 15px 10px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .leaderboard-table th:first-child {
+            border-radius: 10px 0 0 0;
+            width: 60px;
+            text-align: center;
+        }
+
+        .leaderboard-table th:last-child {
+            border-radius: 0 10px 0 0;
+        }
+
+        .leaderboard-table tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+            transition: background-color 0.2s ease;
+        }
+
+        .leaderboard-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .leaderboard-table tbody tr.current-user {
+            background: linear-gradient(135deg, #fff9e6 0%, #fffbf0 100%);
+            border-left: 4px solid #ffd700;
+        }
+
+        .leaderboard-table td {
+            padding: 15px 10px;
+            color: #333;
+        }
+
+        .rank-cell {
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.1em;
+            color: #1a2742;
+        }
+
+        .rank-cell.top-1 {
+            color: #ffd700;
+            font-size: 1.3em;
+        }
+
+        .rank-cell.top-2 {
+            color: #c0c0c0;
+            font-size: 1.2em;
+        }
+
+        .rank-cell.top-3 {
+            color: #cd7f32;
+            font-size: 1.2em;
+        }
+
+        .username-cell {
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .score-cell {
+            font-weight: 700;
+            color: #1a2742;
+            font-size: 1.1em;
+        }
+
+        .score-cell.excellent {
+            color: #10b981;
+        }
+
+        .levels-cell {
+            color: #666;
+        }
+
+        .medal {
+            font-size: 1.2em;
+            margin-right: 5px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .no-data-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 25px;
@@ -474,6 +595,18 @@
 
             .stats-summary {
                 grid-template-columns: 1fr;
+            }
+
+            .leaderboard-table th,
+            .leaderboard-table td {
+                padding: 10px 5px;
+                font-size: 0.85em;
+            }
+
+            .rank-cell.top-1,
+            .rank-cell.top-2,
+            .rank-cell.top-3 {
+                font-size: 1em;
             }
         }
     </style>
@@ -540,6 +673,13 @@
             <h1>Welcome, <span id="userNameDisplay"></span>! 👋</h1>
             <p class="subtitle">Choose your challenge level</p>
 
+            <div class="button-container" style="margin-bottom: 20px;">
+                <button onclick="showLeaderboard()"
+                    style="background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #1a2742; font-size: 1em; padding: 10px 30px;">
+                    🏆 View Leaderboard
+                </button>
+            </div>
+
             <div class="levels-grid" id="levelsGrid"></div>
 
             <div class="stats-summary" id="statsSummary">
@@ -597,6 +737,20 @@
                     <strong id="totalCount"></strong>
                 </div>
             </div>
+            <div class="button-container">
+                <button onclick="backToLevels()">Back to Levels</button>
+            </div>
+        </div>
+
+        <!-- Leaderboard Screen -->
+        <div id="leaderboardScreen" class="hidden">
+            <h1>🏆 Leaderboard</h1>
+            <p class="subtitle">Top ML Quiz Masters</p>
+
+            <div id="leaderboardContent" class="leaderboard-content">
+                <div class="loading">Loading leaderboard...</div>
+            </div>
+
             <div class="button-container">
                 <button onclick="backToLevels()">Back to Levels</button>
             </div>

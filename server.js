@@ -80,7 +80,7 @@ app.post('/api/register', async (req, res) => {
         db.run(
             'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
             [username, email, hashedPassword],
-            function(err) {
+            function (err) {
                 if (err) {
                     if (err.message.includes('UNIQUE')) {
                         return res.status(400).json({ error: 'Username or email already exists' });
@@ -174,7 +174,7 @@ app.post('/api/complete-level', (req, res) => {
          ON CONFLICT(user_id, level) 
          DO UPDATE SET score = ?, completed_at = CURRENT_TIMESTAMP`,
         [userId, level, score, score],
-        function(err) {
+        function (err) {
             if (err) {
                 return res.status(500).json({ error: 'Failed to save progress' });
             }
@@ -194,7 +194,7 @@ app.post('/api/save-answer', (req, res) => {
     db.run(
         'INSERT INTO user_answers (user_id, level, question_index, selected_answer, is_correct) VALUES (?, ?, ?, ?, ?)',
         [userId, level, questionIndex, selectedAnswer, isCorrect ? 1 : 0],
-        function(err) {
+        function (err) {
             if (err) {
                 return res.status(500).json({ error: 'Failed to save answer' });
             }
@@ -226,6 +226,32 @@ app.get('/api/stats/:userId', (req, res) => {
                 avgScore: Math.round(stats[0].avg_score || 0),
                 perfectLevels: stats[0].perfect_levels || 0
             });
+        }
+    );
+});
+
+// Get leaderboard - top users by average score
+app.get('/api/leaderboard', (req, res) => {
+    db.all(
+        `SELECT 
+            u.username,
+            COUNT(DISTINCT up.level) as completed_levels,
+            ROUND(AVG(up.score)) as avg_score,
+            SUM(CASE WHEN up.score >= 90 THEN 1 ELSE 0 END) as perfect_levels,
+            MAX(up.completed_at) as last_activity
+         FROM users u
+         INNER JOIN user_progress up ON u.id = up.user_id
+         GROUP BY u.id, u.username
+         HAVING completed_levels > 0
+         ORDER BY avg_score DESC, completed_levels DESC
+         LIMIT 50`,
+        [],
+        (err, rows) => {
+            if (err) {
+                return res.status(500).json({ error: 'Failed to fetch leaderboard' });
+            }
+
+            res.json({ leaderboard: rows });
         }
     );
 });

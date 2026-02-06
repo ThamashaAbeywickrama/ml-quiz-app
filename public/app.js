@@ -164,6 +164,7 @@ function showLevelScreen() {
     document.getElementById('levelScreen').classList.remove('hidden');
     document.getElementById('quizScreen').classList.add('hidden');
     document.getElementById('resultsContainer').classList.add('hidden');
+    document.getElementById('leaderboardScreen').classList.add('hidden');
 
     document.getElementById('userNameDisplay').textContent = currentUser.username;
     renderLevels();
@@ -352,6 +353,91 @@ async function showResults() {
 
 function backToLevels() {
     showLevelScreen();
+}
+
+async function showLeaderboard() {
+    document.getElementById('levelScreen').classList.add('hidden');
+    document.getElementById('quizScreen').classList.add('hidden');
+    document.getElementById('resultsContainer').classList.add('hidden');
+    document.getElementById('leaderboardScreen').classList.remove('hidden');
+
+    const contentEl = document.getElementById('leaderboardContent');
+    contentEl.innerHTML = '<div class="loading">Loading leaderboard...</div>';
+
+    try {
+        const response = await fetch(`${API_URL}/leaderboard`);
+        const data = await response.json();
+
+        if (data.leaderboard && data.leaderboard.length > 0) {
+            let tableHTML = `
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Username</th>
+                            <th>Avg Score</th>
+                            <th>Levels</th>
+                            <th>Perfect</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.leaderboard.forEach((user, index) => {
+                const rank = index + 1;
+                const isCurrentUser = currentUser && user.username === currentUser.username;
+                const rowClass = isCurrentUser ? 'current-user' : '';
+
+                let rankDisplay = rank;
+                let rankClass = 'rank-cell';
+
+                if (rank === 1) {
+                    rankDisplay = '🥇';
+                    rankClass += ' top-1';
+                } else if (rank === 2) {
+                    rankDisplay = '🥈';
+                    rankClass += ' top-2';
+                } else if (rank === 3) {
+                    rankDisplay = '🥉';
+                    rankClass += ' top-3';
+                }
+
+                const scoreClass = user.avg_score >= 90 ? 'score-cell excellent' : 'score-cell';
+
+                tableHTML += `
+                    <tr class="${rowClass}">
+                        <td class="${rankClass}">${rankDisplay}</td>
+                        <td class="username-cell">${user.username}${isCurrentUser ? ' 👤' : ''}</td>
+                        <td class="${scoreClass}">${user.avg_score}%</td>
+                        <td class="levels-cell">${user.completed_levels}/4</td>
+                        <td class="levels-cell">${user.perfect_levels}</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            contentEl.innerHTML = tableHTML;
+        } else {
+            contentEl.innerHTML = `
+                <div class="no-data">
+                    <div class="no-data-icon">📊</div>
+                    <p>No leaderboard data yet. Complete some levels to appear here!</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading leaderboard:', error);
+        contentEl.innerHTML = `
+            <div class="no-data">
+                <div class="no-data-icon">⚠️</div>
+                <p>Failed to load leaderboard. Please try again.</p>
+            </div>
+        `;
+    }
 }
 
 // Event listener for next button
